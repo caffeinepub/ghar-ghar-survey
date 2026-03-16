@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* Saffron/Orange government scheme */
+    --background: 0.97 0.01 80;
+    --foreground: 0.15 0.02 45;
+
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.02 45;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.02 45;
+
+    /* Saffron orange primary */
+    --primary: 0.62 0.19 46;
+    --primary-foreground: 1 0 0;
+
+    --secondary: 0.92 0.03 60;
+    --secondary-foreground: 0.3 0.05 45;
+
+    --muted: 0.93 0.02 70;
+    --muted-foreground: 0.5 0.04 50;
+
+    --accent: 0.45 0.13 145;
+    --accent-foreground: 1 0 0;
+
+    --destructive: 0.55 0.2 25;
+    --destructive-foreground: 1 0 0;
+
+    --border: 0.88 0.04 60;
+    --input: 0.88 0.04 60;
+    --ring: 0.62 0.19 46;
+
+    --radius: 0.75rem;
+
+    --chart-1: 0.62 0.19 46;
+    --chart-2: 0.45 0.13 145;
+    --chart-3: 0.55 0.15 250;
+    --chart-4: 0.65 0.18 200;
+    --chart-5: 0.7 0.15 310;
+
+    --sidebar: 0.94 0.03 55;
+    --sidebar-foreground: 0.15 0.02 45;
+    --sidebar-primary: 0.62 0.19 46;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.88 0.04 60;
+    --sidebar-accent-foreground: 0.15 0.02 45;
+    --sidebar-border: 0.85 0.05 60;
+    --sidebar-ring: 0.62 0.19 46;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+}
+
+/* Print styles for PDF export */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white;
+    font-size: 11px;
+  }
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .print-table th,
+  .print-table td {
+    border: 1px solid #333;
+    padding: 4px 6px;
+    text-align: left;
+    font-size: 10px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  img[alt="signature"] {
+    max-height: 40px;
+    width: auto;
+    display: block;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-table th {
+    background: #f97316;
+    color: white;
+  }
+  .print-header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .print-header h1 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .print-header p {
+    font-size: 12px;
+  }
+}
+
+.signature-canvas {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.entry-card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}

@@ -23,6 +23,7 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const isDrawing = useRef(false);
     const lastPos = useRef<{ x: number; y: number } | null>(null);
+    const cachedRect = useRef<DOMRect | null>(null);
     const [empty, setEmpty] = useState(true);
     const [touched, setTouched] = useState(false);
 
@@ -57,13 +58,12 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
-    // Non-passive touch listeners to prevent page scroll while signing
     useEffect(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const getPos = (e: TouchEvent | MouseEvent) => {
-        const rect = canvas.getBoundingClientRect();
+        const rect = cachedRect.current ?? canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         if ("touches" in e && e.touches.length > 0) {
@@ -96,6 +96,7 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(
 
       const onStart = (e: TouchEvent | MouseEvent) => {
         e.preventDefault();
+        cachedRect.current = canvas.getBoundingClientRect();
         isDrawing.current = true;
         lastPos.current = getPos(e);
         setTouched(true);
@@ -115,6 +116,7 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(
         if (isDrawing.current) {
           isDrawing.current = false;
           lastPos.current = null;
+          cachedRect.current = null;
           onChange?.(canvas.toDataURL("image/png"));
         }
       };

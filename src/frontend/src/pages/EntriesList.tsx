@@ -283,7 +283,7 @@ export default function EntriesList({ isAdmin, surveyorPrincipal }: Props) {
           </div>
 
           <div
-            className="hidden md:block rounded-lg border overflow-hidden"
+            className="hidden md:block print:block rounded-lg border overflow-hidden"
             data-ocid="entries.table"
           >
             <Table className="print-table">

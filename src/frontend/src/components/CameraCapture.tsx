@@ -8,6 +8,30 @@ interface Props {
   onChange?: (base64: string) => void;
 }
 
+const resizeImage = (base64: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_WIDTH = 640;
+      const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", 0.55));
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+};
+
 export default function CameraCapture({ value, onChange }: Props) {
   const [showCamera, setShowCamera] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string>(value || "");
@@ -24,8 +48,10 @@ export default function CameraCapture({ value, onChange }: Props) {
     canvasRef,
   } = useCamera({
     facingMode: "environment",
-    quality: 0.85,
+    quality: 0.6,
     format: "image/jpeg",
+    width: 640,
+    height: 480,
   });
 
   const handleOpenCamera = async () => {
@@ -37,10 +63,11 @@ export default function CameraCapture({ value, onChange }: Props) {
     const file = await capturePhoto();
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setCapturedPhoto(base64);
-        onChange?.(base64);
+      reader.onloadend = async () => {
+        const raw = reader.result as string;
+        const resized = await resizeImage(raw);
+        setCapturedPhoto(resized);
+        onChange?.(resized);
         stopCamera();
         setShowCamera(false);
       };
@@ -74,7 +101,7 @@ export default function CameraCapture({ value, onChange }: Props) {
           <img
             src={capturedPhoto}
             alt="Captured"
-            className="w-full max-h-48 object-cover rounded-lg border border-border"
+            className="w-full max-h-32 object-cover rounded-lg border border-border"
           />
           <Button
             type="button"

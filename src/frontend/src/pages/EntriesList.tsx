@@ -315,12 +315,18 @@ export default function EntriesList({
                   <TableHead>आयु</TableHead>
                   <TableHead>मोबाइल</TableHead>
                   {isAdmin && <TableHead>सर्वे कर्ता</TableHead>}
+                  <TableHead>फोटो</TableHead>
+                  <TableHead>हस्ताक्षर</TableHead>
                   <TableHead className="no-print">क्रिया</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((entry, idx) => (
-                  <TableRow key={entry.id} data-ocid={`entries.row.${idx + 1}`}>
+                  <TableRow
+                    key={entry.id}
+                    data-ocid={`entries.row.${idx + 1}`}
+                    style={{ breakInside: "avoid" }}
+                  >
                     <TableCell>{entry.serialNo}</TableCell>
                     <TableCell className="font-medium">
                       {entry.childName}
@@ -334,6 +340,32 @@ export default function EntriesList({
                     <TableCell>{entry.age}</TableCell>
                     <TableCell>{entry.mobileNo}</TableCell>
                     {isAdmin && <TableCell>{entry.surveyorName}</TableCell>}
+                    <TableCell>
+                      {entry.photo ? (
+                        <img
+                          src={entry.photo}
+                          alt="फोटो"
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {entry.signature ? (
+                        <img
+                          src={entry.signature}
+                          alt="हस्ताक्षर"
+                          style={{ height: "40px", maxWidth: "100px" }}
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell className="no-print">
                       <div className="flex items-center gap-1">
                         <button

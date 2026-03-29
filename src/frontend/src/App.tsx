@@ -15,6 +15,7 @@ import EntriesList from "./pages/EntriesList";
 import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import SurveyForm from "./pages/SurveyForm";
+import type { SurveyEntry } from "./types/survey";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ function AppContent() {
   const [surveyorName, setSurveyorName] = useState("");
   const [page, setPage] = useState<Page>("survey");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<SurveyEntry | null>(null);
 
   const principal = identity?.getPrincipal().toString() ?? "";
   const isLoggedIn = !!identity && !!surveyorName;
@@ -41,6 +43,12 @@ function AppContent() {
     setSurveyorName("");
     localStorage.removeItem("surveyor_name");
     queryClient.clear();
+  };
+
+  const navigateTo = (p: Page) => {
+    if (p !== "survey") setEditEntry(null);
+    setPage(p);
+    setMenuOpen(false);
   };
 
   if (isInitializing) {
@@ -71,7 +79,7 @@ function AppContent() {
   ];
 
   const pageTitles: Record<Page, string> = {
-    survey: "नया सर्वे",
+    survey: editEntry ? "प्रविष्टि संपादित करें" : "नया सर्वे",
     entries: "सभी प्रविष्टियाँ",
     settings: "सेटिंग्स",
   };
@@ -109,10 +117,7 @@ function AppContent() {
                 <button
                   type="button"
                   key={item.key}
-                  onClick={() => {
-                    setPage(item.key);
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => navigateTo(item.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     page === item.key ? "bg-white/20" : "hover:bg-white/10"
                   }`}
@@ -147,7 +152,7 @@ function AppContent() {
             <button
               type="button"
               key={item.key}
-              onClick={() => setPage(item.key)}
+              onClick={() => navigateTo(item.key)}
               className={`flex-1 flex flex-col items-center gap-1 py-2 text-xs transition-colors ${
                 page === item.key
                   ? "text-primary font-semibold"
@@ -177,10 +182,22 @@ function AppContent() {
           <SurveyForm
             surveyorName={surveyorName}
             surveyorPrincipal={principal}
+            editEntry={editEntry ?? undefined}
+            onEditDone={() => {
+              setEditEntry(null);
+              setPage("entries");
+            }}
           />
         )}
         {page === "entries" && (
-          <EntriesList isAdmin={true} surveyorPrincipal={principal} />
+          <EntriesList
+            isAdmin={true}
+            surveyorPrincipal={principal}
+            onEdit={(entry) => {
+              setEditEntry(entry);
+              setPage("survey");
+            }}
+          />
         )}
         {page === "settings" && <SettingsPage />}
       </main>

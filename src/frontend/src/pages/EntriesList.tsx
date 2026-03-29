@@ -13,6 +13,7 @@ import {
 import {
   Download,
   FileSpreadsheet,
+  Pencil,
   Printer,
   RefreshCw,
   Search,
@@ -30,9 +31,14 @@ import {
 interface Props {
   isAdmin: boolean;
   surveyorPrincipal: string;
+  onEdit: (entry: SurveyEntry) => void;
 }
 
-export default function EntriesList({ isAdmin, surveyorPrincipal }: Props) {
+export default function EntriesList({
+  isAdmin,
+  surveyorPrincipal,
+  onEdit,
+}: Props) {
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState<SurveyEntry[]>(() => getEntries());
   const settings = getSettings();
@@ -233,6 +239,15 @@ export default function EntriesList({ isAdmin, surveyorPrincipal }: Props) {
                       </Badge>
                       <button
                         type="button"
+                        onClick={() => onEdit(entry)}
+                        className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                        data-ocid={`entries.edit_button.${idx + 1}`}
+                        title="संपादित करें"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDelete(entry.id)}
                         className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
                         data-ocid="entries.delete_button"
@@ -320,14 +335,25 @@ export default function EntriesList({ isAdmin, surveyorPrincipal }: Props) {
                     <TableCell>{entry.mobileNo}</TableCell>
                     {isAdmin && <TableCell>{entry.surveyorName}</TableCell>}
                     <TableCell className="no-print">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
-                        data-ocid="entries.delete_button"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(entry)}
+                          className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                          data-ocid={`entries.edit_button.${idx + 1}`}
+                          title="संपादित करें"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(entry.id)}
+                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                          data-ocid="entries.delete_button"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

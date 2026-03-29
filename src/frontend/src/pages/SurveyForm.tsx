@@ -26,6 +26,8 @@ import {
 interface Props {
   surveyorName: string;
   surveyorPrincipal: string;
+  editEntry?: SurveyEntry;
+  onEditDone?: () => void;
 }
 
 const CLASSES = [
@@ -76,11 +78,55 @@ const emptyForm = () => ({
   photo: "",
 });
 
-export default function SurveyForm({ surveyorName, surveyorPrincipal }: Props) {
+function entryToForm(entry: SurveyEntry) {
+  return {
+    houseNo: entry.houseNo,
+    wardNo: entry.wardNo,
+    panchayat: entry.panchayat,
+    headName: entry.headName,
+    childName: entry.childName,
+    fatherName: entry.fatherName,
+    motherName: entry.motherName,
+    gender: entry.gender,
+    caste: entry.caste,
+    dob: entry.dob,
+    age: entry.age,
+    studyingClass: entry.studyingClass,
+    studyingSchool: entry.studyingSchool,
+    notStudyingReason: entry.notStudyingReason,
+    aadharNo: entry.aadharNo,
+    mobileNo: entry.mobileNo,
+    signature: entry.signature,
+    photo: entry.photo,
+  };
+}
+
+export default function SurveyForm({
+  surveyorName,
+  surveyorPrincipal,
+  editEntry,
+  onEditDone,
+}: Props) {
+  const isEditMode = !!editEntry;
   const settings = getSettings();
-  const [form, setForm] = useState(emptyForm());
+  const [form, setForm] = useState(() =>
+    editEntry ? entryToForm(editEntry) : emptyForm(),
+  );
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Reset form when editEntry changes
+  useEffect(() => {
+    if (editEntry) {
+      setForm(entryToForm(editEntry));
+      setSubmitted(false);
+      setErrors({});
+    } else {
+      setForm(emptyForm());
+      setSubmitted(false);
+      setErrors({});
+    }
+  }, [editEntry]);
 
   const notStudying =
     form.studyingClass === "ड्रॉपआउट" || form.studyingClass === "पढ़ नहीं रहा";
@@ -125,20 +171,35 @@ export default function SurveyForm({ surveyorName, surveyorPrincipal }: Props) {
       return;
     }
 
-    const entry: SurveyEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      timestamp: new Date().toISOString(),
-      surveyorPrincipal,
-      surveyorName,
-      schoolName: settings.schoolName,
-      session: settings.session,
-      serialNo: nextSerial,
-      ...form,
-    };
-
-    saveEntry(entry);
-    setSubmitted(true);
-    toast.success("सर्वे सफलतापूर्वक सहेजा गया!");
+    if (isEditMode && editEntry) {
+      const updated: SurveyEntry = {
+        id: editEntry.id,
+        timestamp: editEntry.timestamp,
+        surveyorPrincipal: editEntry.surveyorPrincipal,
+        surveyorName: editEntry.surveyorName,
+        schoolName: editEntry.schoolName,
+        session: editEntry.session,
+        serialNo: editEntry.serialNo,
+        ...form,
+      };
+      saveEntry(updated);
+      setSubmitted(true);
+      toast.success("प्रविष्टि अपडेट हो गई");
+    } else {
+      const entry: SurveyEntry = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        timestamp: new Date().toISOString(),
+        surveyorPrincipal,
+        surveyorName,
+        schoolName: settings.schoolName,
+        session: settings.session,
+        serialNo: nextSerial,
+        ...form,
+      };
+      saveEntry(entry);
+      setSubmitted(true);
+      toast.success("सर्वे सफलतापूर्वक सहेजा गया!");
+    }
   };
 
   const handleNewEntry = () => {
@@ -155,13 +216,25 @@ export default function SurveyForm({ surveyorName, surveyorPrincipal }: Props) {
         </div>
         <div className="text-center">
           <h2 className="text-xl font-display font-bold">
-            सर्वे सफलतापूर्वक सहेजा गया
+            {isEditMode ? "प्रविष्टि अपडेट हो गई" : "सर्वे सफलतापूर्वक सहेजा गया"}
           </h2>
-          <p className="text-muted-foreground mt-1">क्रम संख्या: {nextSerial}</p>
+          {!isEditMode && (
+            <p className="text-muted-foreground mt-1">क्रम संख्या: {nextSerial}</p>
+          )}
         </div>
-        <Button onClick={handleNewEntry} className="w-full max-w-xs h-12">
-          नई प्रविष्टि करें
-        </Button>
+        {isEditMode ? (
+          <Button
+            onClick={() => onEditDone?.()}
+            className="w-full max-w-xs h-12"
+            data-ocid="survey.submit_button"
+          >
+            वापस जाएं
+          </Button>
+        ) : (
+          <Button onClick={handleNewEntry} className="w-full max-w-xs h-12">
+            नई प्रविष्टि करें
+          </Button>
+        )}
       </div>
     );
   }
@@ -188,10 +261,18 @@ export default function SurveyForm({ surveyorName, surveyorPrincipal }: Props) {
               <span className="text-muted-foreground">सर्वे कर्ता:</span>
               <p className="font-medium">{surveyorName}</p>
             </div>
-            <div>
-              <span className="text-muted-foreground">क्रम संख्या:</span>
-              <p className="font-bold text-primary">{nextSerial}</p>
-            </div>
+            {!isEditMode && (
+              <div>
+                <span className="text-muted-foreground">क्रम संख्या:</span>
+                <p className="font-bold text-primary">{nextSerial}</p>
+              </div>
+            )}
+            {isEditMode && editEntry && (
+              <div>
+                <span className="text-muted-foreground">क्रम संख्या:</span>
+                <p className="font-bold text-primary">{editEntry.serialNo}</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -524,7 +605,7 @@ export default function SurveyForm({ surveyorName, surveyorPrincipal }: Props) {
         className="w-full h-14 text-base font-semibold"
         data-ocid="survey.submit_button"
       >
-        सर्वे जमा करें
+        {isEditMode ? "अपडेट करें" : "सर्वे जमा करें"}
       </Button>
     </form>
   );
